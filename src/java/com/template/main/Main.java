@@ -1,4 +1,4 @@
-package com.template;
+package com.template.main;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("../main.fxml"));
         primaryStage.setTitle("Pet Shop - CRUD JavaFX");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();

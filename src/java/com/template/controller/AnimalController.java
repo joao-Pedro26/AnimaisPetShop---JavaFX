@@ -1,4 +1,4 @@
-package com.template;
+package com.template.controller;
 
 import com.template.model.dao.AnimalDAO;
 import com.template.model.dto.AnimalDTO;
@@ -7,16 +7,20 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-
+import com.template.util.DialogUtil;
 
 public class AnimalController {
 
     @FXML private TextField txtNome;
     @FXML private TextField txtEspecie;
     @FXML private TextField txtRaca;
-    @FXML private TextField txtIdade;
-    @FXML private TextField txtPeso;
+
+    @FXML private Spinner<Integer> txtIdade;
+    @FXML private Spinner<Double> txtPeso;
     @FXML private ComboBox<String> cbSexo;
+
+    @FXML private Button btnExcluir;
+    @FXML private Label lblMensagem;
 
     @FXML private TableView<AnimalDTO> tabelaAnimais;
     @FXML private TableColumn<AnimalDTO, Integer> colId;
@@ -33,10 +37,13 @@ public class AnimalController {
 
     @FXML
     public void initialize() {
-        // Configura as opções do ComboBox de Sexo
         cbSexo.setItems(FXCollections.observableArrayList("M", "F"));
 
-        // Liga as colunas da tabela aos atributos da classe AnimalDTO
+        txtIdade.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
+        txtPeso.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 500.0, 0.0, 0.5));
+
+        btnExcluir.setDisable(true);
+
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colEspecie.setCellValueFactory(new PropertyValueFactory<>("especie"));
@@ -47,7 +54,6 @@ public class AnimalController {
 
         carregarTabela();
 
-        // Escuta os cliques na tabela para preencher o formulário para edição
         tabelaAnimais.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> selecionarItemTabela(newValue)
         );
@@ -56,7 +62,8 @@ public class AnimalController {
     @FXML
     public void salvar() {
         if (txtNome.getText().isEmpty() || cbSexo.getValue() == null) {
-            System.out.println("Preencha os campos obrigatórios!");
+            // UX: Mensagem amigável de erro na tela
+            mostrarMensagem("Preencha os campos obrigatórios (Nome e Sexo)!", "red");
             return;
         }
 
@@ -64,16 +71,19 @@ public class AnimalController {
         animal.setNome(txtNome.getText());
         animal.setEspecie(txtEspecie.getText());
         animal.setRaca(txtRaca.getText());
-        animal.setIdade(Integer.parseInt(txtIdade.getText()));
-        animal.setPeso(Double.parseDouble(txtPeso.getText()));
+
+        // UX: Pegando valores direto do Spinner
+        animal.setIdade(txtIdade.getValue());
+        animal.setPeso(txtPeso.getValue());
         animal.setSexo(cbSexo.getValue().charAt(0));
 
-        // Se tiver um animal selecionado (com ID), é uma atualização. Se não, é cadastro novo.
         if (animalSelecionado != null) {
             animal.setId(animalSelecionado.getId());
             animalDAO.updateAnimal(animal);
+            mostrarMensagem("Animal atualizado com sucesso!", "green");
         } else {
             animalDAO.cadastrarAnimal(animal);
+            mostrarMensagem("Animal cadastrado com sucesso!", "green");
         }
 
         limpar();
@@ -83,11 +93,20 @@ public class AnimalController {
     @FXML
     public void excluir() {
         if (animalSelecionado != null) {
-            animalDAO.deletarAnimal(animalSelecionado);
-            limpar();
-            carregarTabela();
-        } else {
-            System.out.println("Selecione um animal na tabela para excluir!");
+            // Chama o diálogo customizado, passando 'true' para deixar o botão de confirmação vermelho
+            boolean confirmou = DialogUtil.mostrarConfirmacao(
+                    "Confirmar Exclusão",
+                    "Tem certeza que deseja excluir o animal '" + animalSelecionado.getNome() + "' permanentemente?",
+                    true
+            );
+
+            // Se o usuário clicou em Confirmar, prossegue com a exclusão
+            if (confirmou) {
+                animalDAO.deletarAnimal(animalSelecionado);
+                mostrarMensagem("Animal excluído com sucesso!", "green");
+                limpar();
+                carregarTabela();
+            }
         }
     }
 
@@ -97,9 +116,12 @@ public class AnimalController {
         txtNome.clear();
         txtEspecie.clear();
         txtRaca.clear();
-        txtIdade.clear();
-        txtPeso.clear();
+
+        txtIdade.getValueFactory().setValue(0);
+        txtPeso.getValueFactory().setValue(0.0);
         cbSexo.setValue(null);
+
+        btnExcluir.setDisable(true);
     }
 
     private void carregarTabela() {
@@ -113,9 +135,19 @@ public class AnimalController {
             txtNome.setText(animal.getNome());
             txtEspecie.setText(animal.getEspecie());
             txtRaca.setText(animal.getRaca());
-            txtIdade.setText(String.valueOf(animal.getIdade()));
-            txtPeso.setText(String.valueOf(animal.getPeso()));
+
+            txtIdade.getValueFactory().setValue(animal.getIdade());
+            txtPeso.getValueFactory().setValue(animal.getPeso());
             cbSexo.setValue(String.valueOf(animal.getSexo()));
+
+            btnExcluir.setDisable(false);
+            lblMensagem.setText("");
         }
+    }
+
+    // Método auxiliar para atualizar a Label de mensagem
+    private void mostrarMensagem(String msg, String cor) {
+        lblMensagem.setText(msg);
+        lblMensagem.setStyle("-fx-text-fill: " + cor + "; -fx-font-weight: bold;");
     }
 }

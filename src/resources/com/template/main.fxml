@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -13,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.AnimalController">
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.controller.AnimalController">
     <children>
         <HBox spacing="20.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
             <children>
@@ -26,8 +27,11 @@
                                 <Font name="System Bold" size="22.0" />
                             </font>
                             <VBox.margin>
-                                <Insets bottom="15.0" /> </VBox.margin>
+                                <Insets bottom="5.0" />
+                            </VBox.margin>
                         </Label>
+
+                        <Label fx:id="lblMensagem" prefHeight="20.0" wrapText="true" />
 
                         <Label text="Nome:" textFill="#E0E0E0">
                             <font><Font name="System Bold" size="14.0" /></font>
@@ -47,17 +51,17 @@
                         <Label text="Idade:" textFill="#E0E0E0">
                             <font><Font name="System Bold" size="14.0" /></font>
                         </Label>
-                        <TextField fx:id="txtIdade" prefHeight="35.0" style="-fx-background-color: #121212; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                        <Spinner fx:id="txtIdade" editable="true" maxWidth="Infinity" prefHeight="35.0" style="-fx-background-color: #121212; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
 
                         <Label text="Peso:" textFill="#E0E0E0">
                             <font><Font name="System Bold" size="14.0" /></font>
                         </Label>
-                        <TextField fx:id="txtPeso" prefHeight="35.0" style="-fx-background-color: #121212; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                        <Spinner fx:id="txtPeso" editable="true" maxWidth="Infinity" prefHeight="35.0" style="-fx-background-color: #121212; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
 
                         <Label text="Sexo:" textFill="#E0E0E0">
                             <font><Font name="System Bold" size="14.0" /></font>
                         </Label>
-                        <ComboBox fx:id="cbSexo" prefHeight="35.0" prefWidth="300.0" promptText="Selecione" style="-fx-background-color: #121212; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                        <ComboBox fx:id="cbSexo" maxWidth="Infinity" prefHeight="35.0" promptText="Selecione" style="-fx-background-color: #121212; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5;" />
 
                         <Region VBox.vgrow="ALWAYS" />
 
@@ -67,7 +71,7 @@
                                     <font><Font name="System Bold" size="14.0" /></font>
                                 </Button>
 
-                                <Button mnemonicParsing="false" onAction="#excluir" prefHeight="38.0" prefWidth="90.0" style="-fx-background-color: transparent; -fx-text-fill: #E74C3C; -fx-border-color: #E74C3C; -fx-border-radius: 5; -fx-cursor: hand;" text="Excluir">
+                                <Button fx:id="btnExcluir" mnemonicParsing="false" onAction="#excluir" prefHeight="38.0" prefWidth="90.0" style="-fx-background-color: transparent; -fx-text-fill: #E74C3C; -fx-border-color: #E74C3C; -fx-border-radius: 5; -fx-cursor: hand;" text="Excluir">
                                     <font><Font size="13.0" /></font>
                                 </Button>
 

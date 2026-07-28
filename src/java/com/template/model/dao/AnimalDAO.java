@@ -7,8 +7,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AnimalDAO {
+
+    private static final Logger logger = Logger.getLogger(AnimalDAO.class.getName());
 
     public ArrayList<AnimalDTO> selecionarAnimal() {
         ArrayList<AnimalDTO> listaAnimal = new ArrayList<>();
@@ -31,7 +35,7 @@ public class AnimalDAO {
                 listaAnimal.add(animal);
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao listar animais: " + e.getMessage());
+            logger.log(Level.SEVERE, "Erro ao listar animais", e);
         }
         return listaAnimal;
     }
@@ -51,7 +55,7 @@ public class AnimalDAO {
             return true; // Sucesso!
 
         } catch (SQLException e) {
-            System.err.println("Erro ao cadastrar animal: " + e.getMessage());
+            logger.log(Level.SEVERE, "Erro ao cadastrar animal", e);
             return false; // Falha!
         }
     }
@@ -67,7 +71,7 @@ public class AnimalDAO {
             return linhasAfetadas > 0;
 
         } catch (SQLException e) {
-            System.err.println("Erro ao deletar animal: " + e.getMessage());
+            logger.log(Level.SEVERE, "Erro ao deletar animal", e);
             return false;
         }
     }
@@ -88,7 +92,7 @@ public class AnimalDAO {
             return linhasAfetadas > 0;
 
         } catch (SQLException e) {
-            System.err.println("Erro ao atualizar animal: " + e.getMessage());
+            logger.log(Level.SEVERE, "Erro ao atualizar animal", e);
             return false;
         }
     }
