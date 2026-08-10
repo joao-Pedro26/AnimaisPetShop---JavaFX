@@ -2,16 +2,16 @@ package com.template.model.dto;
 
 public class AnimalDTO {
 
-    private int id;
+    private Integer id;
     private String nome;
     private String especie;
     private String raca;
-    private int idade;
-    private double peso;
-    private char sexo;
+    private Integer idade;
+    private Double peso;
+    private Character sexo;
 
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -43,7 +43,7 @@ public class AnimalDTO {
         this.raca = raca;
     }
 
-    public int getIdade() {
+    public Integer getIdade() {
         return idade;
     }
 
@@ -51,7 +51,7 @@ public class AnimalDTO {
         this.idade = idade;
     }
 
-    public double getPeso() {
+    public Double getPeso() {
         return peso;
     }
 
@@ -59,7 +59,7 @@ public class AnimalDTO {
         this.peso = peso;
     }
 
-    public char getSexo() {
+    public Character getSexo() {
         return sexo;
     }
 

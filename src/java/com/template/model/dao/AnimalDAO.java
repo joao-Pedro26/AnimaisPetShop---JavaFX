@@ -2,6 +2,7 @@ package com.template.model.dao;
 
 import com.template.model.Conexao;
 import com.template.model.dto.AnimalDTO;
+import com.template.util.DialogUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,6 +37,7 @@ public class AnimalDAO {
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao listar animais", e);
+            DialogUtil.mostrarErro("Erro de Conexão", "Não foi possível listar os animais.\nDetalhes: " + e.getMessage());
         }
         return listaAnimal;
     }
@@ -52,11 +54,12 @@ public class AnimalDAO {
             ps.setString(6, String.valueOf(animal.getSexo()));
 
             ps.execute();
-            return true; // Sucesso!
+            return true;
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao cadastrar animal", e);
-            return false; // Falha!
+            DialogUtil.mostrarErro("Erro de Cadastro", "Não foi possível salvar o animal.\nDetalhes: " + e.getMessage());
+            return false;
         }
     }
 
@@ -66,12 +69,12 @@ public class AnimalDAO {
         try (Connection c = new Conexao().conectaBD(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, animal.getId());
 
-            // executeUpdate retorna o número de linhas afetadas. Se for maior que 0, deletou.
             int linhasAfetadas = ps.executeUpdate();
             return linhasAfetadas > 0;
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao deletar animal", e);
+            DialogUtil.mostrarErro("Erro de Exclusão", "Não foi possível deletar o animal.\nDetalhes: " + e.getMessage());
             return false;
         }
     }
@@ -93,6 +96,7 @@ public class AnimalDAO {
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao atualizar animal", e);
+            DialogUtil.mostrarErro("Erro de Atualização", "Não foi possível atualizar o animal.\nDetalhes: " + e.getMessage());
             return false;
         }
     }

@@ -1,24 +1,24 @@
 package com.template.controller;
 
-import com.template.model.dao.AnimalDAO;
+import com.template.controller.helper.AnimalFormCleaner;
+import com.template.exception.BusinessException;
 import com.template.model.dto.AnimalDTO;
+import com.template.service.AnimalService;
+import com.template.util.DialogUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import com.template.util.DialogUtil;
 
 public class AnimalController {
 
     @FXML private TextField txtNome;
     @FXML private TextField txtEspecie;
     @FXML private TextField txtRaca;
-
     @FXML private Spinner<Integer> txtIdade;
     @FXML private Spinner<Double> txtPeso;
     @FXML private ComboBox<String> cbSexo;
-
     @FXML private Button btnExcluir;
     @FXML private Label lblMensagem;
 
@@ -31,19 +31,78 @@ public class AnimalController {
     @FXML private TableColumn<AnimalDTO, Double> colPeso;
     @FXML private TableColumn<AnimalDTO, String> colSexo;
 
-    private AnimalDAO animalDAO = new AnimalDAO();
-    private ObservableList<AnimalDTO> obsAnimais;
+    private AnimalService animalService;
+    private AnimalFormCleaner formCleaner;
     private AnimalDTO animalSelecionado;
 
     @FXML
     public void initialize() {
-        cbSexo.setItems(FXCollections.observableArrayList("M", "F"));
+        this.animalService = new AnimalService();
 
+        this.formCleaner = new AnimalFormCleaner(
+                txtNome, txtEspecie, txtRaca,
+                txtIdade, txtPeso, cbSexo,
+                btnExcluir, tabelaAnimais
+        );
+
+        configurarComponentesIniciais();
+        configurarColunasTabela();
+        carregarTabela();
+    }
+
+    @FXML
+    public void salvar() {
+        try {
+            AnimalDTO animal = montarDTOAPartirDoFormulario();
+            boolean isAtualizacao = (animal.getId() != null);
+
+            animalService.salvar(animal);
+
+            mostrarMensagem(isAtualizacao ? "Animal atualizado com sucesso!" : "Animal cadastrado com sucesso!", "green");
+            limpar();
+            carregarTabela();
+
+        } catch (BusinessException e) {
+            mostrarMensagem(e.getMessage(), "red");
+        }
+    }
+
+    @FXML
+    public void excluir() {
+        if (animalSelecionado == null) return;
+
+        boolean confirmou = DialogUtil.mostrarConfirmacao(
+                "Confirmar Exclusão",
+                "Tem certeza que deseja excluir o animal '" + animalSelecionado.getNome() + "' permanentemente?",
+                true
+        );
+
+        if (confirmou) {
+            try {
+                animalService.excluir(animalSelecionado);
+                mostrarMensagem("Animal excluído com sucesso!", "green");
+                limpar();
+                carregarTabela();
+            } catch (BusinessException e) {
+                mostrarMensagem(e.getMessage(), "red");
+            }
+        }
+    }
+
+    @FXML
+    public void limpar() {
+        animalSelecionado = null;
+        formCleaner.limparCampos();
+    }
+
+    private void configurarComponentesIniciais() {
+        cbSexo.setItems(FXCollections.observableArrayList("M", "F"));
         txtIdade.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
         txtPeso.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 500.0, 0.0, 0.5));
-
         btnExcluir.setDisable(true);
+    }
 
+    private void configurarColunasTabela() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colEspecie.setCellValueFactory(new PropertyValueFactory<>("especie"));
@@ -52,102 +111,53 @@ public class AnimalController {
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
         colSexo.setCellValueFactory(new PropertyValueFactory<>("sexo"));
 
-        carregarTabela();
-
         tabelaAnimais.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> selecionarItemTabela(newValue)
+                (obs, oldValue, newValue) -> preencherFormularioParaEdicao(newValue)
         );
     }
 
-    @FXML
-    public void salvar() {
-        if (txtNome.getText().isEmpty() || cbSexo.getValue() == null) {
-            // UX: Mensagem amigável de erro na tela
-            mostrarMensagem("Preencha os campos obrigatórios (Nome e Sexo)!", "red");
-            return;
-        }
-
-        AnimalDTO animal = new AnimalDTO();
-        animal.setNome(txtNome.getText());
-        animal.setEspecie(txtEspecie.getText());
-        animal.setRaca(txtRaca.getText());
-
-        // UX: Pegando valores direto do Spinner
-        animal.setIdade(txtIdade.getValue());
-        animal.setPeso(txtPeso.getValue());
-        animal.setSexo(cbSexo.getValue().charAt(0));
-
-        if (animalSelecionado != null) {
-            animal.setId(animalSelecionado.getId());
-            animalDAO.updateAnimal(animal);
-            mostrarMensagem("Animal atualizado com sucesso!", "green");
-        } else {
-            animalDAO.cadastrarAnimal(animal);
-            mostrarMensagem("Animal cadastrado com sucesso!", "green");
-        }
-
-        limpar();
-        carregarTabela();
-    }
-
-    @FXML
-    public void excluir() {
-        if (animalSelecionado != null) {
-            // Chama o diálogo customizado, passando 'true' para deixar o botão de confirmação vermelho
-            boolean confirmou = DialogUtil.mostrarConfirmacao(
-                    "Confirmar Exclusão",
-                    "Tem certeza que deseja excluir o animal '" + animalSelecionado.getNome() + "' permanentemente?",
-                    true
-            );
-
-            // Se o usuário clicou em Confirmar, prossegue com a exclusão
-            if (confirmou) {
-                animalDAO.deletarAnimal(animalSelecionado);
-                mostrarMensagem("Animal excluído com sucesso!", "green");
-                limpar();
-                carregarTabela();
-            }
-        }
-    }
-
-    @FXML
-    public void limpar() {
-        animalSelecionado = null;
-        txtNome.clear();
-        txtEspecie.clear();
-        txtRaca.clear();
-
-        txtIdade.getValueFactory().setValue(0);
-        txtPeso.getValueFactory().setValue(0.0);
-        cbSexo.setValue(null);
-
-        btnExcluir.setDisable(true);
-    }
-
     private void carregarTabela() {
-        obsAnimais = FXCollections.observableArrayList(animalDAO.selecionarAnimal());
+        ObservableList<AnimalDTO> obsAnimais = FXCollections.observableArrayList(animalService.listarTodos());
         tabelaAnimais.setItems(obsAnimais);
     }
 
-    private void selecionarItemTabela(AnimalDTO animal) {
-        if (animal != null) {
-            animalSelecionado = animal;
-            txtNome.setText(animal.getNome());
-            txtEspecie.setText(animal.getEspecie());
-            txtRaca.setText(animal.getRaca());
-
-            txtIdade.getValueFactory().setValue(animal.getIdade());
-            txtPeso.getValueFactory().setValue(animal.getPeso());
-            cbSexo.setValue(String.valueOf(animal.getSexo()));
-
-            btnExcluir.setDisable(false);
-            lblMensagem.setText("");
+    private AnimalDTO montarDTOAPartirDoFormulario() {
+        AnimalDTO animal = new AnimalDTO();
+        if (animalSelecionado != null) {
+            animal.setId(animalSelecionado.getId());
         }
+
+        animal.setNome(txtNome.getText());
+        animal.setEspecie(txtEspecie.getText());
+        animal.setRaca(txtRaca.getText());
+        animal.setIdade(txtIdade.getValue());
+        animal.setPeso(txtPeso.getValue());
+
+        String sexoSelecionado = cbSexo.getValue();
+        if (sexoSelecionado != null && !sexoSelecionado.isEmpty()) {
+            animal.setSexo(sexoSelecionado.charAt(0));
+        }
+
+        return animal;
     }
 
-    // Método auxiliar para atualizar a Label de mensagem
+    private void preencherFormularioParaEdicao(AnimalDTO animal) {
+        if (animal == null) return;
+
+        this.animalSelecionado = animal;
+        txtNome.setText(animal.getNome());
+        txtEspecie.setText(animal.getEspecie());
+        txtRaca.setText(animal.getRaca());
+        txtIdade.getValueFactory().setValue(animal.getIdade());
+        txtPeso.getValueFactory().setValue(animal.getPeso());
+        cbSexo.setValue(String.valueOf(animal.getSexo()));
+
+        btnExcluir.setDisable(false);
+        lblMensagem.setText("");
+    }
+
     private void mostrarMensagem(String msg, String cor) {
         lblMensagem.setText(msg);
-        lblMensagem.setStyle("-fx-text-fill: " + cor + "; -fx-font-weight: bold;");
+        lblMensagem.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold;", cor));
     }
 }
