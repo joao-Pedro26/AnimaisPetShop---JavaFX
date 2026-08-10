@@ -1,6 +1,7 @@
 package com.template.controller;
 
 import com.template.controller.helper.AnimalFormCleaner;
+import com.template.controller.helper.AnimalFormMapper;
 import com.template.exception.BusinessException;
 import com.template.model.dto.AnimalDTO;
 import com.template.service.AnimalService;
@@ -33,6 +34,8 @@ public class AnimalController {
 
     private AnimalService animalService;
     private AnimalFormCleaner formCleaner;
+    private AnimalFormMapper formMapper;
+
     private AnimalDTO animalSelecionado;
 
     @FXML
@@ -40,9 +43,11 @@ public class AnimalController {
         this.animalService = new AnimalService();
 
         this.formCleaner = new AnimalFormCleaner(
-                txtNome, txtEspecie, txtRaca,
-                txtIdade, txtPeso, cbSexo,
-                btnExcluir, tabelaAnimais
+                txtNome, txtEspecie, txtRaca, txtIdade, txtPeso, cbSexo, btnExcluir, tabelaAnimais
+        );
+
+        this.formMapper = new AnimalFormMapper(
+                txtNome, txtEspecie, txtRaca, txtIdade, txtPeso, cbSexo
         );
 
         configurarComponentesIniciais();
@@ -53,12 +58,13 @@ public class AnimalController {
     @FXML
     public void salvar() {
         try {
-            AnimalDTO animal = montarDTOAPartirDoFormulario();
-            boolean isAtualizacao = (animal.getId() != null);
+            Integer idSelecionado = (animalSelecionado != null) ? animalSelecionado.getId() : null;
+
+            AnimalDTO animal = formMapper.extrairDTOdoFormulario(idSelecionado);
 
             animalService.salvar(animal);
 
-            mostrarMensagem(isAtualizacao ? "Animal atualizado com sucesso!" : "Animal cadastrado com sucesso!", "green");
+            mostrarMensagem(idSelecionado != null ? "Animal atualizado com sucesso!" : "Animal cadastrado com sucesso!", "green");
             limpar();
             carregarTabela();
 
@@ -95,6 +101,21 @@ public class AnimalController {
         formCleaner.limparCampos();
     }
 
+    private void aoSelecionarAnimalNaTabela(AnimalDTO animal) {
+        if (animal == null) return;
+
+        this.animalSelecionado = animal;
+        formMapper.preencherFormulario(animal);
+
+        btnExcluir.setDisable(false);
+        lblMensagem.setText("");
+    }
+
+    private void carregarTabela() {
+        ObservableList<AnimalDTO> obsAnimais = FXCollections.observableArrayList(animalService.listarTodos());
+        tabelaAnimais.setItems(obsAnimais);
+    }
+
     private void configurarComponentesIniciais() {
         cbSexo.setItems(FXCollections.observableArrayList("M", "F"));
         txtIdade.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
@@ -112,48 +133,8 @@ public class AnimalController {
         colSexo.setCellValueFactory(new PropertyValueFactory<>("sexo"));
 
         tabelaAnimais.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldValue, newValue) -> preencherFormularioParaEdicao(newValue)
+                (obs, oldValue, newValue) -> aoSelecionarAnimalNaTabela(newValue)
         );
-    }
-
-    private void carregarTabela() {
-        ObservableList<AnimalDTO> obsAnimais = FXCollections.observableArrayList(animalService.listarTodos());
-        tabelaAnimais.setItems(obsAnimais);
-    }
-
-    private AnimalDTO montarDTOAPartirDoFormulario() {
-        AnimalDTO animal = new AnimalDTO();
-        if (animalSelecionado != null) {
-            animal.setId(animalSelecionado.getId());
-        }
-
-        animal.setNome(txtNome.getText());
-        animal.setEspecie(txtEspecie.getText());
-        animal.setRaca(txtRaca.getText());
-        animal.setIdade(txtIdade.getValue());
-        animal.setPeso(txtPeso.getValue());
-
-        String sexoSelecionado = cbSexo.getValue();
-        if (sexoSelecionado != null && !sexoSelecionado.isEmpty()) {
-            animal.setSexo(sexoSelecionado.charAt(0));
-        }
-
-        return animal;
-    }
-
-    private void preencherFormularioParaEdicao(AnimalDTO animal) {
-        if (animal == null) return;
-
-        this.animalSelecionado = animal;
-        txtNome.setText(animal.getNome());
-        txtEspecie.setText(animal.getEspecie());
-        txtRaca.setText(animal.getRaca());
-        txtIdade.getValueFactory().setValue(animal.getIdade());
-        txtPeso.getValueFactory().setValue(animal.getPeso());
-        cbSexo.setValue(String.valueOf(animal.getSexo()));
-
-        btnExcluir.setDisable(false);
-        lblMensagem.setText("");
     }
 
     private void mostrarMensagem(String msg, String cor) {
