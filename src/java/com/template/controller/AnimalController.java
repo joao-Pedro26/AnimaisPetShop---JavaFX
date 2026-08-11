@@ -5,6 +5,7 @@ import com.template.controller.helper.AnimalFormMapper;
 import com.template.exception.BusinessException;
 import com.template.model.dto.AnimalDTO;
 import com.template.service.AnimalService;
+import com.template.service.ShowMessage;
 import com.template.util.DialogUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,6 +36,7 @@ public class AnimalController {
     private AnimalService animalService;
     private AnimalFormCleaner formCleaner;
     private AnimalFormMapper formMapper;
+    private ShowMessage showMessage;
 
     private AnimalDTO animalSelecionado;
 
@@ -50,6 +52,8 @@ public class AnimalController {
                 txtNome, txtEspecie, txtRaca, txtIdade, txtPeso, cbSexo
         );
 
+        this.showMessage = new ShowMessage(lblMensagem);
+
         configurarComponentesIniciais();
         configurarColunasTabela();
         carregarTabela();
@@ -64,12 +68,12 @@ public class AnimalController {
 
             animalService.salvar(animal);
 
-            mostrarMensagem(idSelecionado != null ? "Animal atualizado com sucesso!" : "Animal cadastrado com sucesso!", "green");
+            showMessage.mostrarMensagem(idSelecionado != null ? "Animal atualizado com sucesso!" : "Animal cadastrado com sucesso!", "green");
             limpar();
             carregarTabela();
 
         } catch (BusinessException e) {
-            mostrarMensagem(e.getMessage(), "red");
+            showMessage.mostrarMensagem(e.getMessage(), "red");
         }
     }
 
@@ -86,11 +90,11 @@ public class AnimalController {
         if (confirmou) {
             try {
                 animalService.excluir(animalSelecionado);
-                mostrarMensagem("Animal excluído com sucesso!", "green");
+                showMessage.mostrarMensagem("Animal excluído com sucesso!", "green");
                 limpar();
                 carregarTabela();
             } catch (BusinessException e) {
-                mostrarMensagem(e.getMessage(), "red");
+                showMessage.mostrarMensagem(e.getMessage(), "red");
             }
         }
     }
@@ -135,10 +139,5 @@ public class AnimalController {
         tabelaAnimais.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldValue, newValue) -> aoSelecionarAnimalNaTabela(newValue)
         );
-    }
-
-    private void mostrarMensagem(String msg, String cor) {
-        lblMensagem.setText(msg);
-        lblMensagem.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold;", cor));
     }
 }
