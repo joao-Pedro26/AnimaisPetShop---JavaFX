@@ -16,10 +16,8 @@ public class AnimalService {
     }
 
     public void salvar(AnimalDTO animal) {
-        String sexoStr = animal.getSexo() != null ? String.valueOf(animal.getSexo()) : "";
-        if (!AnimalValidator.isValidoParaSalvar(animal.getNome(), sexoStr)) {
-            throw new BusinessException("Preencha os campos obrigatórios (Nome e Sexo)!");
-        }
+
+        AnimalValidator.validarAnimal(animal);
 
         if (animal.getId() != null && animal.getId() > 0) {
             animalDAO.updateAnimal(animal);

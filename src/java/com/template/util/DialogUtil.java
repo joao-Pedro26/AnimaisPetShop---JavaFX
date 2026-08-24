@@ -46,7 +46,7 @@ public class DialogUtil {
     public static void mostrarErro(String titulo, String mensagem) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(titulo);
-        alert.setHeaderText(null); // Deixa sem cabeçalho para ficar mais limpo
+        alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
     }
