@@ -3,21 +3,23 @@ package com.template.service;
 import com.template.exception.BusinessException;
 import com.template.model.dao.AnimalDAO;
 import com.template.model.dto.AnimalDTO;
-import com.template.validator.AnimalValidator;
+import com.template.validator.IAnimalValidator;
 
 import java.util.List;
 
-public class AnimalService {
+public class AnimalService implements IAnimalService {
 
     private final AnimalDAO animalDAO;
+    private final IAnimalValidator animalValidator;
 
-    public AnimalService() {
+    public AnimalService(IAnimalValidator animalValidator) {
+        this.animalValidator = animalValidator;
         this.animalDAO = new AnimalDAO();
     }
 
+    @Override
     public void salvar(AnimalDTO animal) {
-
-        AnimalValidator.validarAnimal(animal);
+        animalValidator.validarAnimal(animal);
 
         if (animal.getId() != null && animal.getId() > 0) {
             animalDAO.updateAnimal(animal);
@@ -26,6 +28,7 @@ public class AnimalService {
         }
     }
 
+    @Override
     public void excluir(AnimalDTO animal) {
         if (animal == null) {
             throw new BusinessException("Nenhum animal selecionado para exclusão.");
@@ -33,6 +36,7 @@ public class AnimalService {
         animalDAO.deletarAnimal(animal);
     }
 
+    @Override
     public List<AnimalDTO> listarTodos() {
         return animalDAO.selecionarAnimal();
     }

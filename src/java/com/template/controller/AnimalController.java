@@ -4,7 +4,7 @@ import com.template.controller.helper.AnimalFormCleaner;
 import com.template.controller.helper.AnimalFormMapper;
 import com.template.exception.BusinessException;
 import com.template.model.dto.AnimalDTO;
-import com.template.service.AnimalService;
+import com.template.service.IAnimalService;
 import com.template.service.ShowMessage;
 import com.template.util.DialogUtil;
 import javafx.collections.FXCollections;
@@ -33,17 +33,20 @@ public class AnimalController {
     @FXML private TableColumn<AnimalDTO, Double> colPeso;
     @FXML private TableColumn<AnimalDTO, String> colSexo;
 
-    private AnimalService animalService;
+    private final IAnimalService animalService;
+
     private AnimalFormCleaner formCleaner;
     private AnimalFormMapper formMapper;
     private ShowMessage showMessage;
 
     private AnimalDTO animalSelecionado;
 
+    public AnimalController(IAnimalService animalService) {
+        this.animalService = animalService;
+    }
+
     @FXML
     public void initialize() {
-        this.animalService = new AnimalService();
-
         this.formCleaner = new AnimalFormCleaner(
                 txtNome, txtEspecie, txtRaca, txtIdade, txtPeso, cbSexo, btnExcluir, tabelaAnimais
         );
